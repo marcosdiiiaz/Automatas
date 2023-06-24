@@ -1,6 +1,5 @@
 import re
 import csv
-import tkinter as tk
 from datetime import date as dt
 
 # Seguimiento del tráfico de AP, para determinar cuál es el AP que más tráfico
