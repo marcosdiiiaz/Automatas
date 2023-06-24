@@ -26,4 +26,6 @@ from datetime import date as dt
 # Razon_de_Terminación_de_Sesión
 
 path_archivo = '/home/juan-4u41/Escritorio/2023/Autómatas y gramática/Otros/export-2019-to-now-v4.csv'
-d = pd.read_csv(path_archivo)
+df = pd.read_csv(path_archivo)
+
+print(df.head(5))
