@@ -24,7 +24,7 @@ from datetime import date as dt
 # MAC_Cliente,
 # Razon_de_Terminación_de_Sesión
 
-path_archivo = '/home/juan-4u41/Escritorio/2023/Autómatas y gramática/Otros/export-2019-to-now-v4.csv'
+path_archivo = '/home/marcos/Escritorio/export-2019-to-now-v4.csv'
 
 with open(path_archivo, 'r') as archivo_csv:
     reader = csv.reader(archivo_csv)

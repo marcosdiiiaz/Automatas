@@ -23,15 +23,16 @@ def calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin):
                 inicio_conexion_dia = fila[indice_inicio_conexion_dia]
 
                 # Verificar si la fecha de inicio de conexión está dentro del rango especificado
-                if fecha_inicio <= inicio_conexion_dia <= fecha_fin:
-                    # Calcular el tráfico total del AP sumando los octetos de entrada y salida
-                    trafico_total = input_octets + output_octets
+                if re.match(r'\d{4}-\d{2}-\d{2}', inicio_conexion_dia):
+                    if fecha_inicio <= inicio_conexion_dia <= fecha_fin:
+                        # Calcular el tráfico total del AP sumando los octetos de entrada y salida
+                        trafico_total = input_octets + output_octets
 
-                    # Actualizar el diccionario de tráfico del AP
-                    if ip_nas_ap in trafico_ap:
-                        trafico_ap[ip_nas_ap] += trafico_total
-                    else:
-                        trafico_ap[ip_nas_ap] = trafico_total
+                        # Actualizar el diccionario de tráfico del AP
+                        if ip_nas_ap in trafico_ap:
+                            trafico_ap[ip_nas_ap] += trafico_total
+                        else:
+                            trafico_ap[ip_nas_ap] = trafico_total
             except ValueError:
                 # Ignorar filas con valores no numéricos en la columna "Input_Octects"
                 continue
@@ -42,11 +43,10 @@ def calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin):
 
     return ap_max_trafico, trafico_maximo
 
-
 # Ejemplo de uso
-ruta_archivo = '/home/juan-4u41/Escritorio/2023/Autómatas y gramática/Otros/export-2019-to-now-v4.csv'
-fecha_inicio = '2022-01-01'
-fecha_fin = '2022-12-31'
+ruta_archivo = '/home/marcos/Escritorio/export-2019-to-now-v4.csv'
+fecha_inicio = input('Ingrese una fecha inicial, formato aaaa-mm-dd: ')
+fecha_fin = input('Ingrese una fecha final, formato aaaa-mm-dd: ')
 
 ap_max_trafico, trafico_maximo = calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin)
 
