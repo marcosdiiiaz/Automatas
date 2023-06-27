@@ -5,6 +5,7 @@ from tkinter import filedialog, messagebox
 
 def calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin):
     trafico_ap = {}
+    contador_errores = 0  # Contador de errores
 
     with open(ruta_archivo, 'r') as archivo:
         lector_csv = csv.reader(archivo)
@@ -36,14 +37,16 @@ def calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin):
                         else:
                             trafico_ap[ip_nas_ap] = trafico_total
             except ValueError:
-                # Ignorar filas con valores no numéricos en la columna "Input_Octects"
+                # Ignorar filas con valores no numéricos en la columna "Input_Octects" dentro del rango de fechas
+                if fecha_inicio <= inicio_conexion_dia <= fecha_fin:
+                    contador_errores += 1  # Incrementar el contador de errores
                 continue
 
     # Obtener el AP con mayor tráfico
     ap_max_trafico = max(trafico_ap, key=trafico_ap.get)
     trafico_maximo = trafico_ap[ap_max_trafico]
 
-    return ap_max_trafico, trafico_maximo
+    return ap_max_trafico, trafico_maximo, contador_errores
 
 def obtener_archivo():
     ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos CSV', '*.csv')])
@@ -56,10 +59,11 @@ def calcular_trafico():
     fecha_fin = fecha_fin_entry.get()
 
     try:
-        ap_max_trafico, trafico_maximo = calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin)
+        ap_max_trafico, trafico_maximo, contador_errores = calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin)
         resultado_text.delete(1.0, tk.END)
         resultado_text.insert(tk.END, f"El AP con más tráfico en el período {fecha_inicio} - {fecha_fin} es: {ap_max_trafico}\n")
-        resultado_text.insert(tk.END, f"Tráfico máximo: {trafico_maximo} octetos")
+        resultado_text.insert(tk.END, f"Tráfico máximo: {trafico_maximo} octetos\n")
+        resultado_text.insert(tk.END, f"Errores encontrados: {contador_errores}")
     except Exception as e:
         messagebox.showerror('Error', str(e))
 
