@@ -1,5 +1,7 @@
 import csv
 import re
+import tkinter as tk
+from tkinter import filedialog, messagebox
 
 def calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin):
     trafico_ap = {}
@@ -43,12 +45,52 @@ def calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin):
 
     return ap_max_trafico, trafico_maximo
 
-# Ejemplo de uso
-ruta_archivo = '/home/marcos/Escritorio/export-2019-to-now-v4.csv'
-fecha_inicio = input('Ingrese una fecha inicial, formato aaaa-mm-dd: ')
-fecha_fin = input('Ingrese una fecha final, formato aaaa-mm-dd: ')
+def obtener_archivo():
+    ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos CSV', '*.csv')])
+    ruta_archivo_entry.delete(0, tk.END)
+    ruta_archivo_entry.insert(tk.END, ruta_archivo)
 
-ap_max_trafico, trafico_maximo = calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin)
+def calcular_trafico():
+    ruta_archivo = ruta_archivo_entry.get()
+    fecha_inicio = fecha_inicio_entry.get()
+    fecha_fin = fecha_fin_entry.get()
 
-print(f"El AP con más tráfico en el período {fecha_inicio} - {fecha_fin} es: {ap_max_trafico}")
-print(f"Tráfico máximo: {trafico_maximo} octetos")
+    try:
+        ap_max_trafico, trafico_maximo = calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin)
+        resultado_text.delete(1.0, tk.END)
+        resultado_text.insert(tk.END, f"El AP con más tráfico en el período {fecha_inicio} - {fecha_fin} es: {ap_max_trafico}\n")
+        resultado_text.insert(tk.END, f"Tráfico máximo: {trafico_maximo} octetos")
+    except Exception as e:
+        messagebox.showerror('Error', str(e))
+
+# Crear la ventana principal
+ventana = tk.Tk()
+ventana.title("Calcular Tráfico AP")
+ventana.geometry("400x300")
+
+# Etiquetas y campos de entrada
+ruta_archivo_label = tk.Label(ventana, text="Ruta del archivo CSV:")
+ruta_archivo_label.pack()
+ruta_archivo_entry = tk.Entry(ventana, width=40)
+ruta_archivo_entry.pack()
+
+fecha_inicio_label = tk.Label(ventana, text="Fecha inicial (aaaa-mm-dd):")
+fecha_inicio_label.pack()
+fecha_inicio_entry = tk.Entry(ventana, width=20)
+fecha_inicio_entry.pack()
+
+fecha_fin_label = tk.Label(ventana, text="Fecha final (aaaa-mm-dd):")
+fecha_fin_label.pack()
+fecha_fin_entry = tk.Entry(ventana, width=20)
+fecha_fin_entry.pack()
+
+obtener_archivo_button = tk.Button(ventana, text="Seleccionar archivo", command=obtener_archivo)
+obtener_archivo_button.pack()
+
+calcular_button = tk.Button(ventana, text="Calcular tráfico", command=calcular_trafico)
+calcular_button.pack()
+
+resultado_text = tk.Text(ventana, height=5, width=40)
+resultado_text.pack()
+
+ventana.mainloop()
