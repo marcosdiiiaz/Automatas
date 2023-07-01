@@ -1,7 +1,20 @@
 import csv
 import re
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import ttk
+import pandas as pd
 
-def calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin):
+def importar_csv():
+    ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos CSV', '*.csv')])
+    ruta_archivo_entry.delete(0, tk.END)
+    ruta_archivo_entry.insert(0, ruta_archivo)
+
+def filtrar():
+    ruta_archivo = ruta_archivo_entry.get()
+    fecha_inicio = fecha_inicio_entry.get()
+    fecha_fin = fecha_fin_entry.get()
+
     trafico_ap = {}
 
     with open(ruta_archivo, 'r') as archivo:
@@ -41,14 +54,66 @@ def calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin):
     ap_max_trafico = max(trafico_ap, key=trafico_ap.get)
     trafico_maximo = trafico_ap[ap_max_trafico]
 
-    return ap_max_trafico, trafico_maximo
+    tabla.delete(*tabla.get_children())  # Borrar contenido anterior de la tabla
 
-# Ejemplo de uso
-ruta_archivo = '/home/marcos/Escritorio/export-2019-to-now-v4.csv'
-fecha_inicio = input('Ingrese una fecha inicial, formato aaaa-mm-dd: ')
-fecha_fin = input('Ingrese una fecha final, formato aaaa-mm-dd: ')
+    for ap, trafico in trafico_ap.items():
+        tabla.insert('', tk.END, values=(ap, trafico))
 
-ap_max_trafico, trafico_maximo = calcular_trafico_ap(ruta_archivo, fecha_inicio, fecha_fin)
+def exportar_excel():
+    archivo_salida = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[('Archivos Excel', '*.xlsx')])
+    if archivo_salida:
+        filas_seleccionadas = tabla.selection()
+        datos_exportar = []
 
-print(f"El AP con más tráfico en el período {fecha_inicio} - {fecha_fin} es: {ap_max_trafico}")
-print(f"Tráfico máximo: {trafico_maximo} octetos")
+        for fila in filas_seleccionadas:
+            datos_exportar.append(tabla.item(fila)['values'])
+
+        df = pd.DataFrame(datos_exportar, columns=['AP', 'Trafico'])
+        df.to_excel(archivo_salida, index=False)
+
+# Crear la ventana principal
+ventana = tk.Tk()
+ventana.title("Análisis de Tráfico AP")
+ventana.geometry("600x400")
+
+# Crear los widgets
+ruta_archivo_label = tk.Label(ventana, text="Ruta del archivo CSV:")
+ruta_archivo_label.pack()
+
+ruta_archivo_entry = tk.Entry(ventana, width=50)
+ruta_archivo_entry.pack()
+
+importar_csv_button = tk.Button(ventana, text="Importar CSV", command=importar_csv)
+importar_csv_button.pack()
+
+fechas_frame = tk.Frame(ventana)
+fechas_frame.pack()
+
+fecha_inicio_label = tk.Label(fechas_frame, text="Fecha inicio (formato aaaa-mm-dd):")
+fecha_inicio_label.grid(row=0, column=0)
+
+fecha_inicio_entry = tk.Entry(fechas_frame)
+fecha_inicio_entry.grid(row=0, column=1)
+
+fecha_fin_label = tk.Label(fechas_frame, text="Fecha fin (formato aaaa-mm-dd):")
+fecha_fin_label.grid(row=1, column=0)
+
+fecha_fin_entry = tk.Entry(fechas_frame)
+fecha_fin_entry.grid(row=1, column=1)
+
+filtrar_button = tk.Button(ventana, text="Filtrar", command=filtrar)
+filtrar_button.pack()
+
+tabla_frame = tk.Frame(ventana)
+tabla_frame.pack()
+
+tabla = ttk.Treeview(tabla_frame, columns=['AP', 'Trafico'])
+tabla.heading('AP', text='AP')
+tabla.heading('Trafico', text='Trafico')
+tabla.pack()
+
+exportar_excel_button = tk.Button(ventana, text="Exportar a Excel", command=exportar_excel)
+exportar_excel_button.pack()
+
+# Ejecutar la ventana
+ventana.mainloop()

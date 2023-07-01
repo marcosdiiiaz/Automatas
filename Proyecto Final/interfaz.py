@@ -1,70 +1,31 @@
 import tkinter as tk
-from tkinter import ttk
-from tkinter.font import Font
+from tkinter import filedialog, messagebox
+from ap_traffic import Trafico
 
-# ---------- Funciones -------------------
-def menu_filtrado():
-    et_menu.grid_forget()
-    botonCargar.grid_forget()
-    botonFiltrar.grid_forget()
-    botonVer.grid_forget()
-    botonVolver.grid(row=1, column=0, padx=10, pady=10)
+# --- Ventana --------------------
+ventana00 = tk.Tk()
+ventana00.title('Seguimiento del tráfico de Access Point')
+ventana00.geometry('1920x1080')
 
-def menu_principal():
-    et_menu.grid(row=1, column=0, padx=10, pady=10)
-    botonCargar.grid(row=2, column=0, padx=10, pady=10)
-    botonFiltrar.grid(row=3, column=0, padx=10, pady=10)
-    botonVer.grid(row=4, column=0, padx=10, pady=10)
-    botonVolver.grid_forget()
-# ----------------------------------------
+# --- Etiquetas ------------------
+etiqueta_inicio = tk.Label(ventana00, text='Fecha de Inicio:')
+etiqueta_inicio.pack()
+etiqueta_fin = tk.Label(ventana00, text='Fecha de Fin:')
+etiqueta_fin.pack()
 
-# ---------- Ventana ---------------------
-# Crear la ventana principal
-ventana = tk.Tk()
-# Establecer el título de la ventana
-ventana.title('')
-# Tamaño de la ventana
-ventana.geometry('1920x1080')
-# ----------------------------------------
+# --- Entradas -------------------
+entrada_inicio = tk.Entry(ventana00)
+entrada_inicio.pack()
+entrada_fin = tk.Entry(ventana00)
+entrada_fin.pack()
 
-# ----------- Texto ----------------------
-# Fuentes para el texto
-ft_normal = Font(family='Ubuntu')
-ft_negrita = Font(family='Ubuntu', weight='bold')
+# --- Botones --------------------
+boton_importar = tk.Button(ventana00, text='Importar CSV', command=Trafico().importarCSV)
+boton_importar.pack()
+boton_exportar = tk.Button(ventana00, text='Exportar Excel', command=Trafico().exportarXLSX)
+boton_exportar.pack()
+boton_calcular = tk.Button(ventana00, text='Calcular Tráfico', command=lambda: Trafico().calcularTrafico(entrada_inicio.get(), entrada_fin.get()))
+boton_calcular.pack()
 
-# Crear etiqueta principal
-et_main = tk.Label(ventana, text='Seguimiento del tráfico de Access Point', font=ft_negrita)
-# Posición del label
-et_main.grid(row=0, column=0, padx=10, pady=10)
-# Crear etiqueta Menú Principal
-et_menu = tk.Label(ventana, text='Menú Principal', font=ft_negrita)
-# Posición del label
-et_menu.grid(row=1, column=0, padx=10, pady=10)
-# ----------------------------------------
 
-# ---------- Botones ---------------------
-# Estilos para los botones
-style = ttk.Style()
-style.configure('Custom.TButton', font=ft_normal)
-
-# Crear botón Cargar CSV
-botonCargar = ttk.Button(ventana, text='Cargar CSV', width=20, padding=(7, 7), style='Custom.TButton')
-botonCargar.grid(row=2, column=0, padx=10, pady=10)
-
-# Crear botón Filtrado por Fechas
-botonFiltrar = ttk.Button(ventana, text='Filtrado por Fechas', width=20, padding=(7, 7), style='Custom.TButton', command=menu_filtrado)
-botonFiltrar.grid(row=3, column=0, padx=10, pady=10)
-
-# Crear botón Ver CSV
-botonVer = ttk.Button(ventana, text='Ver CSV', width=20, padding=(7, 7), style='Custom.TButton')
-botonVer.grid(row=4, column=0, padx=10, pady=10)
-
-# Crear botón Volver al Menú Principal
-botonVolver = ttk.Button(ventana, text='Volver al Menú Principal', width=20, padding=(7, 7), style='Custom.TButton', command=menu_principal)
-
-# Mostrar inicialmente el menú principal
-menu_principal()
-# ----------------------------------------
-
-# Ejecutar bucle de la ventana
-ventana.mainloop()
+ventana00.mainloop()
