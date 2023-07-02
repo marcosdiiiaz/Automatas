@@ -31,6 +31,7 @@ class Trafico:
         }
         self.encabezados = []
         self.datos_filtrados = []
+        self.datos_filtrados_fecha = []
 
     def importarCSV(self):
         ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos CSV', '*.csv')])
@@ -46,6 +47,23 @@ class Trafico:
             except Exception as e:
                 messagebox.showerror("Error", str(e))
         self.manejarErrores()
+
+    def exportarXLSX(self):
+        ruta_guardar = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[('Archivos de Excel', '*.xlsx')])
+        if ruta_guardar:
+            try:
+                # Obtener solo las columnas seleccionadas
+                columnas_seleccionadas = [4, 6, 8, 11, 12]
+                datos_seleccionados = [[row[i] for i in columnas_seleccionadas] for row in self.datos_filtrados_fecha]
+
+                # Crear DataFrame con las columnas seleccionadas
+                df = pd.DataFrame(datos_seleccionados, columns=[self.encabezados[i] for i in columnas_seleccionadas])
+
+                # Exportar a Excel
+                df.to_excel(ruta_guardar, index=False)
+                messagebox.showinfo("Información", "El archivo se ha exportado correctamente.")
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
 
     def manejarErrores(self):
         self.errores = []
@@ -66,37 +84,26 @@ class Trafico:
             messagebox.showinfo("Información", f"Se encontraron {contador_errores} errores en el archivo CSV.")
 
     def calcularTrafico(self, fecha_inicio, fecha_fin):
-        trafico_ap = {}
-        self.fila_utilizada = []
-        
-        for fila in self.datos_filtrados:
-            ip_nas_ap = fila[4]
-            inicio_conexion_dia = fila[6]
-            fin_conexion_dia = fila[8]
-            input_octets = int(fila[11])
-            output_octets = int(fila[12])
+        for row in self.datos_filtrados:
+            inicio_conexion_dia = row[6]
+            fin_conexion_dia = row[8]
+            if (fecha_inicio <= inicio_conexion_dia <= fecha_fin) and (fecha_inicio <= fin_conexion_dia <= fecha_fin):
+            # or (inicio_conexion_dia < fecha_inicio and fin_conexion_dia > fecha_fin): No sabemos si incluirlo o no.
+                self.datos_filtrados_fecha.append(row)
 
-            if fecha_inicio <= inicio_conexion_dia <= fecha_fin or fecha_inicio <= fin_conexion_dia <= fecha_fin or (inicio_conexion_dia < fecha_inicio and fin_conexion_dia > fecha_fin):
-                self.fila_utilizada.append(fila)
+        # Calcular el AP con más tráfico
+        ap_trafico_maximo = None
+        trafico_maximo = 0
+        for row in self.datos_filtrados_fecha:
+            input_octets = int(row[11])
+            output_octets = int(row[12])
+            trafico = input_octets + output_octets
+            if trafico > trafico_maximo:
+                trafico_maximo = trafico
+                ap_trafico_maximo = row[4]
 
-                if ip_nas_ap in trafico_ap:
-                    trafico_ap[ip_nas_ap] += input_octets + output_octets
-                else:
-                    trafico_ap[ip_nas_ap] = input_octets + output_octets
-
-        if trafico_ap:
-            ap_max_trafico = max(trafico_ap, key=trafico_ap.get)
-            trafico_maximo = trafico_ap[ap_max_trafico]
-            messagebox.showinfo("Información", f"El AP con mayor tráfico es: {ap_max_trafico}\n"
-                                                f"El tráfico máximo es: {trafico_maximo}")
-
-    def exportarXLSX(self):
-        ruta_guardar = filedialog.asksaveasfilename(defaultextension='.xlsx', filetypes=[('Archivos XLSX', '*.xlsx')])
-
-        if ruta_guardar:
-            try:
-                df = pd.DataFrame(self.fila_utilizada)
-                df.to_excel(ruta_guardar, index=False)
-                messagebox.showinfo("Información", "Archivo XLSX exportado correctamente.")
-            except Exception as e:
-                messagebox.showerror("Error", e)
+        # Mostrar el resultado
+        if ap_trafico_maximo:
+            messagebox.showinfo("Resultado", f"El AP con más tráfico en el rango de fechas proporcionado es: {ap_trafico_maximo}")
+        else:
+            messagebox.showinfo("Resultado", "No se encontraron datos dentro del rango de fechas proporcionado.")
