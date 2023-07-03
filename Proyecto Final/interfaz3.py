@@ -3,7 +3,6 @@ from tkinter import ttk, filedialog, messagebox
 from datetime import datetime
 from ap_traffic3 import Trafico
 
-
 # --- Ventanas --------------------
 class Ventana(tk.Tk):
     def __init__(self):
@@ -11,6 +10,7 @@ class Ventana(tk.Tk):
         self.title('Seguimiento del tráfico de Access Point')
         self.geometry('1920x1080')
         self.trafico = Trafico()
+        
 
         # --- Frames ---------------------
         fra_herramientas = tk.Frame(self, borderwidth=2, relief=tk.FLAT, bg='blue')
@@ -33,7 +33,7 @@ class Ventana(tk.Tk):
         # --- Botones --------------------
         btn_ayuda = tk.Button(fra_herramientas, text='Ayuda')
         btn_ayuda.place(anchor='center', relx=0.1, rely=0.37, width=150, height=30)
-        
+
         btn_importar = tk.Button(fra_herramientas, text='Importar CSV', command=self.trafico.importarCSV)
         btn_importar.place(anchor='center', relx=0.1, rely=0.63, width=150, height=30)
 
@@ -47,17 +47,14 @@ class Ventana(tk.Tk):
         btn_exportar.place(anchor='center', relx=0.9, rely=0.63, width=150, height=30)
 
         # --- Tablas ---------------------
-        tabla00 = ttk.Treeview(self)
-
-        tabla00['columns'] = ['IP NAS AP', 'Inicio de Conexión Día', 'Fin de Conexión Día', 'Input Octects', 'Output Octects']
-
-        tabla00.heading('IP NAS AP', text='IP NAS AP')
-        tabla00.heading('Inicio de Conexión Día', text='Inicio de Conexión Día')
-        tabla00.heading('Fin de Conexión Día', text='Fin de Conexión Día')
-        tabla00.heading('Input Octects', text='Input Octects')
-        tabla00.heading('Output Octects', text='Output Octects')
-        
-        tabla00.place(anchor='center', relx= 0.5, rely=0.5)  
+        self.tabla00 = ttk.Treeview(self)
+        self.tabla00.place(anchor='center', relx=0.5, rely=0.5)
+        self.tabla00['columns'] = ('#', 'Columna1', 'Columna2', 'Columna3')  # Agregar columnas al Treeview
+        self.tabla00.heading('#', text='#')
+        self.tabla00.heading('Columna1', text='Columna1')
+        self.tabla00.heading('Columna2', text='Columna2')
+        self.tabla00.heading('Columna3', text='Columna3')
+        self.contador_filas = 0  # Variable de contador de filas
 
         self.mainloop()
 
@@ -77,15 +74,23 @@ class Ventana(tk.Tk):
     def verTabla(self):
         subventana_ver_tabla = SubventanaVerTabla(self, 'Ver Tabla', '¿Qué tabla quiere ver?')
         opcion = subventana_ver_tabla.mostrar()
-        if opcion == 'Rango Abierto':
-            self.actualizarTabla(self.trafico.tabla_abierto)
-        elif opcion == 'Rango Cerrado':
-            self.actualizarTabla(self.trafico.tabla_cerrado)
+        df = self.trafico.actualizarTabla(opcion)  # Obtener el DataFrame df
+        if df is not None:
+            # Configurar las columnas del TreeView
+            columnas = ['#'] + list(df.columns)  # Agregar la columna de enumeración
+            self.tabla00['columns'] = columnas
+            for columna in columnas:
+                self.tabla00.heading(columna, text=columna)
 
-    def actualizarTabla(self, datos):
-        self.tabla00.delete(*self.tabla00.get_children())
-        for row in datos:
-            self.tabla00.insert('', 'end', values=row)
+            # Agregar las filas del DataFrame al TreeView
+            self.tabla00.delete(*self.tabla00.get_children())
+            self.contador_filas = 0  # Reiniciar el contador de filas
+            for _, fila in df.iterrows():
+                self.contador_filas += 1  # Incrementar el contador de filas
+                values = [self.contador_filas] + list(fila.values)  # Agregar el número de fila
+                self.tabla00.insert('', tk.END, values=values)
+        else:
+            messagebox.showerror('Error', 'No hay datos.')
 
     def exportarXLSX(self):
         subventana_exportar = SubventanaExportar(self, 'Exportar XLSX', '¿Qué rango quiere exportar?')
