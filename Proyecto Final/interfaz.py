@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, font
 from datetime import datetime
-from ap_traffic3 import Trafico
+from ap_traffic import Trafico
 
 # --- Ventanas --------------------
 class Ventana(tk.Tk):
@@ -55,8 +55,9 @@ class Ventana(tk.Tk):
         # --- Tablas ---------------------
         self.tabla00 = ttk.Treeview(self)
         self.tabla00.place(anchor='center', relx=0.5, rely=0.5)
-        self.tabla00['columns'] = ('ColumnaAP', 'ColumnaInicio', 'ColumnaFin', 'ColumnaInput', 'ColumnaOutput')
+        self.tabla00['columns'] = ('ID', 'ColumnaAP', 'ColumnaInicio', 'ColumnaFin', 'ColumnaInput', 'ColumnaOutput')
         self.tabla00.heading('#0', text='#')
+        self.tabla00.heading('ID', text='ID')
         self.tabla00.heading('ColumnaAP', text='IP NAS AP')
         self.tabla00.heading('ColumnaInicio', text='Inicio de Conexión Día')
         self.tabla00.heading('ColumnaFin', text='Fin de Conexión Día')
@@ -85,7 +86,7 @@ class Ventana(tk.Tk):
         df = self.trafico.actualizarTabla(opcion)  # Obtener el DataFrame df
         if df is not None:
             # Configurar las columnas del TreeView
-            columnas = ['IP NAS AP', 'Inicio de Conexión Día', 'Fin de Conexión Día', 'Input Octects', 'Output Octects']
+            columnas = ['ID', 'IP NAS AP', 'Inicio de Conexión Día', 'Fin de Conexión Día', 'Input Octects', 'Output Octects']
             self.tabla00['columns'] = columnas
             for columna in columnas:
                 self.tabla00.heading(columna, text=columna)

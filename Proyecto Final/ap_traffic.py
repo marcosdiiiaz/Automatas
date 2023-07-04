@@ -15,7 +15,7 @@ class Trafico:
         'ID_Sesion': r"^(([0-9]|[A-F]){8}|([0-9]|[A-F]){16})(-([0-9]|[A-F]){8})?$",  # ID_Sesion index 1
         'ID_Conexión_unico': r"^([0-9]|[a-f]){16}$",  # ID_Conexión_unico index 2
         'Usuario': r"^.*$",  # Usuario index 3
-        'IP_NAS_AP': r"^(?:\d{1,3}\.){3}\d{1,3}$",  # IP_NAS_AP index 4
+        'IP_NAS_AP': r"^(\d{1,3}\.){3}\d{1,3}$",  # IP_NAS_AP index 4
         'Tipo__conexión': r"^Wireless-802.11$",  # Tipo__conexión index 5
         'Inicio_de_Conexión_Dia': r"^\d{4}-\d{2}-\d{2}$",  # Inicio_de_Conexión_Dia index 6
         'Inicio_de_Conexión_Hora': r"^\d{2}:\d{2}:\d{2}$",  # Inicio_de_Conexión_Hora index 7
@@ -35,21 +35,23 @@ class Trafico:
         self.rango_cerrado = []
         self.dfa = None
         self.dfc = None
+        self.ap_trafico_maximo = None
+        self.trafico_maximo = 0
 
     def importarCSV(self):
-        ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos CSV', '*.csv')])
+        self.ruta_archivo = filedialog.askopenfilename(filetypes=[('Archivos CSV', '*.csv')])
 
-        if ruta_archivo:
+        if self.ruta_archivo:
             try:
-                with open(ruta_archivo, 'r') as archivo:
+                with open(self.ruta_archivo, 'r') as archivo:
                     lector_csv = csv.reader(archivo)
                     self.encabezados = next(lector_csv)
                     self.datos_csv = list(lector_csv)
+                    messagebox.showinfo("Información", "El archivo se ha importado correctamente.")
             except FileNotFoundError:
                 messagebox.showerror("Error", "Archivo no encontrado.")
             except Exception as e:
                 messagebox.showerror("Error", str(e))
-        self.manejarErrores()
 
     def exportarAbiertoXLSX(self):
         ruta_guardar = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[('Archivos de Excel', '*.xlsx')])
@@ -88,43 +90,45 @@ class Trafico:
             messagebox.showinfo("Información", f"Se encontraron {contador_errores} errores en el archivo CSV.")
 
     def calcularRangoAbierto(self, fecha_inicio, fecha_fin):
-        self.rango_abierto = []
-        datos_seleccionados = []
-        for row in self.datos_filtrados:
-            inicio_conexion_dia = row[6]
-            fin_conexion_dia = row[8]
-            if (fecha_inicio <= inicio_conexion_dia <= fecha_fin) or (fecha_inicio <= fin_conexion_dia <= fecha_fin) or (inicio_conexion_dia < fecha_inicio and fin_conexion_dia > fecha_fin):
-                self.rango_abierto.append(row)
-
-            if self.rango_abierto:
-                try:
-                    columnas_seleccionadas = [4, 6, 8, 11, 12]
-                    datos_seleccionados = [[row[i] for i in columnas_seleccionadas] for row in self.rango_abierto]
-                    self.dfa = pd.DataFrame(datos_seleccionados, columns=[self.encabezados[i] for i in columnas_seleccionadas])
-                except Exception as e:
-                    messagebox.showerror("Error", str(e))
-            else:
-                messagebox.showerror('Error', 'No hay datos.')
-                break
         try:
-            ap_trafico_maximo = None
-            trafico_maximo = 0
-            for row in self.rango_abierto:
-                input_octets = int(row[11])
-                output_octets = int(row[12])
-                trafico = input_octets + output_octets
-                if trafico > trafico_maximo:
-                    trafico_maximo = trafico
-                    ap_trafico_maximo = row[4]
+            chunksize = 10000  # Tamaño de bloque a leer
+            self.rango_abierto = []
+            self.ap_trafico_maximo = None
+            self.trafico_maximo = 0
+
+            self.manejarErrores()
+
+            # Leer el archivo CSV en bloques
+            for chunk in pd.read_csv(self.ruta_archivo, chunksize=chunksize):
+                # Filtrar los datos dentro del rango de fechas
+                chunk = chunk[(chunk['Inicio_de_Conexión_Dia'] >= fecha_inicio) & (chunk['FIN_de_Conexión_Dia'] <= fecha_fin)]
+                
+                # Agregar los datos filtrados al rango abierto
+                self.rango_abierto.extend(chunk.values.tolist())
+
+                # Calcular el AP con más tráfico
+                for row in chunk.itertuples(index=False):
+                    input_octets = int(row[11])
+                    output_octets = int(row[12])
+                    trafico = input_octets + output_octets
+                    if trafico > self.trafico_maximo:
+                        self.trafico_maximo = trafico
+                        self.ap_trafico_maximo = row[4]
+
+            # Crear DataFrame de los datos seleccionados
+            columnas_seleccionadas = [0, 4, 6, 8, 11, 12]
+            datos_seleccionados = [[row[i] for i in columnas_seleccionadas] for row in self.rango_abierto]
+            self.dfa = pd.DataFrame(datos_seleccionados, columns=[self.encabezados[i] for i in columnas_seleccionadas])
+
+            if self.ap_trafico_maximo:
+                messagebox.showinfo("Resultado", f"El AP con más tráfico en el rango de fechas proporcionado es: {self.ap_trafico_maximo}")
+            else:
+                messagebox.showinfo("Resultado", "No se encontraron datos dentro del rango de fechas proporcionado.")
+
         except Exception as e:
             messagebox.showerror('Error', str(e))
-
-        if ap_trafico_maximo:
-            messagebox.showinfo("Resultado", f"El AP con más tráfico en el rango de fechas proporcionado es: {ap_trafico_maximo}")
-        else:
-            messagebox.showinfo("Resultado", "No se encontraron datos dentro del rango de fechas proporcionado.")
-
     def calcularRangoCerrado(self, fecha_inicio, fecha_fin):
+        self.manejarErrores()
         self.rango_cerrado = []
         datos_seleccionados = []
         self.dfc = []
@@ -146,20 +150,20 @@ class Trafico:
                 break
 
         try:
-            ap_trafico_maximo = None
-            trafico_maximo = 0
+            self.ap_trafico_maximo = None
+            self.trafico_maximo = 0
             for row in self.rango_cerrado:
                 input_octets = int(row[11])
                 output_octets = int(row[12])
                 trafico = input_octets + output_octets
-                if trafico > trafico_maximo:
-                    trafico_maximo = trafico
-                    ap_trafico_maximo = row[4]
+                if trafico > self.trafico_maximo:
+                    self.trafico_maximo = trafico
+                    self.ap_trafico_maximo = row[4]
         except Exception as e:
             messagebox.showerror('Error', str(e))
 
-        if ap_trafico_maximo:
-            messagebox.showinfo("Resultado", f"El AP con más tráfico en el rango de fechas proporcionado es: {ap_trafico_maximo}")
+        if self.ap_trafico_maximo:
+            messagebox.showinfo("Resultado", f"El AP con más tráfico en el rango de fechas proporcionado es: {self.ap_trafico_maximo}")
         else:
             messagebox.showinfo("Resultado", "No se encontraron datos dentro del rango de fechas proporcionado.")
 
