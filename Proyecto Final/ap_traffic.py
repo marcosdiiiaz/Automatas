@@ -118,7 +118,7 @@ class Trafico:
             return
 
         try:
-            columnas_seleccionadas = [4, 6, 8, 11, 12]
+            columnas_seleccionadas = [0, 4, 6, 8, 11, 12]
             datos_seleccionados = [[row[i] for i in columnas_seleccionadas] for row in self.rango_abierto]
             self.dfa = pd.DataFrame(datos_seleccionados, columns=[self.encabezados[i] for i in columnas_seleccionadas])
         except Exception as e:
