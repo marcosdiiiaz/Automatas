@@ -37,19 +37,19 @@ class Ventana(tk.Tk):
         self.ent_ff.place(anchor='center', relx=0.6, rely=0.37, height=30)
 
         # --- Botones --------------------
-        btn_ayuda = tk.Button(fra_herramientas, text='Ayuda', fg='#dde8ed', bg='#2c2c2c')
-        btn_ayuda.place(anchor='center', relx=0.1, rely=0.37, width=150, height=30)
+        # btn_ayuda = tk.Button(fra_herramientas, text='Ayuda') Función que podríamos implementar
+        # btn_ayuda.place(anchor='center', relx=0.1, rely=0.37, width=150, height=30)
 
-        btn_importar = tk.Button(fra_herramientas, text='Importar CSV', command=self.trafico.importarCSV)
+        btn_importar = tk.Button(fra_herramientas, text='Importar CSV', command=self.trafico.importarCSV, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed',activebackground='#343434')
         btn_importar.place(anchor='center', relx=0.1, rely=0.63, width=150, height=30)
 
-        self.btn_calcular = tk.Button(fra_herramientas, text='Calcular Tráfico', command=self.calcularTrafico)
+        self.btn_calcular = tk.Button(fra_herramientas, text='Calcular Tráfico', command=self.calcularTrafico, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed',activebackground='#343434')
         self.btn_calcular.place(anchor='center', relx=0.5, rely=0.63, width=150, height=30)
 
-        btn_tabla = tk.Button(fra_herramientas, text='Ver Tabla', command=self.verTabla)
+        btn_tabla = tk.Button(fra_herramientas, text='Ver Tabla', command=self.verTabla, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed', activebackground='#343434')
         btn_tabla.place(anchor='center', relx=0.9, rely=0.37, width=150, height=30)
 
-        btn_exportar = tk.Button(fra_herramientas, text='Exportar Excel', command=self.exportarXLSX)
+        btn_exportar = tk.Button(fra_herramientas, text='Exportar Excel', command=self.exportarXLSX, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed', activebackground='#343434')
         btn_exportar.place(anchor='center', relx=0.9, rely=0.63, width=150, height=30)
 
         # --- Tablas ---------------------
@@ -109,7 +109,6 @@ class Ventana(tk.Tk):
         elif opcion == 'Rango Cerrado':
             self.trafico.exportarCerradoXLSX()
 
-
 # --- Complementos -----------------------
 class Subventana(tk.Toplevel):
     def __init__(self, parent, title, question):
@@ -119,7 +118,8 @@ class Subventana(tk.Toplevel):
         self.question = question
         self.opcion = None
 
-        self.et_opcion = tk.Label(self, text=self.question)
+        self.configure(bg='#2c2c2c')
+        self.et_opcion = tk.Label(self, text=self.question, fg='#dde8ed', bg='#2c2c2c')
         self.et_opcion.pack(pady=10)
 
     def opcion_abierto(self):
@@ -139,30 +139,30 @@ class SubventanaCalcular(Subventana):
     def __init__(self, parent, title, question):
         super().__init__(parent, title, question)
 
-        btn_abierto = tk.Button(self, text='Rango Abierto', command=self.opcion_abierto)
+        btn_abierto = tk.Button(self, text='Rango Abierto', command=self.opcion_abierto, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed', activebackground='#343434')
         btn_abierto.pack(side=tk.LEFT, padx=10)
 
-        btn_cerrado = tk.Button(self, text='Rango Cerrado', command=self.opcion_cerrado)
+        btn_cerrado = tk.Button(self, text='Rango Cerrado', command=self.opcion_cerrado, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed', activebackground='#343434')
         btn_cerrado.pack(side=tk.LEFT, padx=10)
 
 class SubventanaVerTabla(Subventana):
     def __init__(self, parent, title, question):
         super().__init__(parent, title, question)
 
-        btn_abierto = tk.Button(self, text='Rango Abierto', command=self.opcion_abierto)
+        btn_abierto = tk.Button(self, text='Rango Abierto', command=self.opcion_abierto, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed', activebackground='#343434')
         btn_abierto.pack(side=tk.LEFT, padx=10)
 
-        btn_cerrado = tk.Button(self, text='Rango Cerrado', command=self.opcion_cerrado)
+        btn_cerrado = tk.Button(self, text='Rango Cerrado', command=self.opcion_cerrado, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed', activebackground='#343434')
         btn_cerrado.pack(side=tk.LEFT, padx=10)
 
 class SubventanaExportar(Subventana):
     def __init__(self, parent, title, question):
         super().__init__(parent, title, question)
 
-        btn_abierto = tk.Button(self, text='Rango Abierto', command=self.opcion_abierto)
+        btn_abierto = tk.Button(self, text='Rango Abierto', command=self.opcion_abierto, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed', activebackground='#343434')
         btn_abierto.pack(side=tk.LEFT, padx=10)
 
-        btn_cerrado = tk.Button(self, text='Rango Cerrado', command=self.opcion_cerrado)
+        btn_cerrado = tk.Button(self, text='Rango Cerrado', command=self.opcion_cerrado, fg='#dde8ed', bg='#2c2c2c', activeforeground='#dde8ed', activebackground='#343434')
         btn_cerrado.pack(side=tk.LEFT, padx=10)
 
 
