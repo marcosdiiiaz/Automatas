@@ -1,28 +1,34 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, font
 from datetime import datetime
 from ap_traffic3 import Trafico
-
 
 # --- Ventanas --------------------
 class Ventana(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('Seguimiento del tráfico de Access Point')
+        self.configure(bg='#343434')
         self.geometry('1920x1080')
         self.trafico = Trafico()
 
         # --- Frames ---------------------
-        fra_herramientas = tk.Frame(self, borderwidth=2, relief=tk.FLAT, bg='blue')
+        fra_herramientas = tk.Frame(self, borderwidth=2, relief=tk.FLAT, bg='#2c2c2c')
         fra_herramientas.place(anchor='center', relx=0.5, rely=0.085)
-        fra_borde00 = tk.Frame(fra_herramientas, bg='blue')
+        fra_borde00 = tk.Frame(fra_herramientas, bg='#2c2c2c')
         fra_borde00.pack(padx=682, pady=60)
 
         # --- Etiquetas ------------------
-        et_fi = tk.Label(fra_herramientas, text='Fecha Inicial:', bg='blue')
-        et_fi.place(anchor='center', relx=0.3, rely=0.37)
-        et_ff = tk.Label(fra_herramientas, text='Fecha Final:', bg='blue')
-        et_ff.place(anchor='center', relx=0.5, rely=0.37)
+        et_fi = tk.Label(fra_herramientas, text='Fecha Inicial', fg='#dde8ed', bg='#2c2c2c')
+        et_fi.place(anchor='center', relx=0.4, rely=0.15)
+
+        et_ff = tk.Label(fra_herramientas, text='Fecha Final', fg='#dde8ed', bg='#2c2c2c')
+        et_ff.place(anchor='center', relx=0.6, rely=0.15)
+
+        font_size = 12  # Tamaño de fuente deseado
+        font_style = font.Font(size=font_size, weight="bold")  # Establecer weight como "bold"
+        et_fi['font'] = font_style
+        et_ff['font'] = font_style
 
         # --- Entradas -------------------
         self.ent_fi = tk.Entry(fra_herramientas)
@@ -33,7 +39,7 @@ class Ventana(tk.Tk):
         # --- Botones --------------------
         btn_ayuda = tk.Button(fra_herramientas, text='Ayuda')
         btn_ayuda.place(anchor='center', relx=0.1, rely=0.37, width=150, height=30)
-        
+
         btn_importar = tk.Button(fra_herramientas, text='Importar CSV', command=self.trafico.importarCSV)
         btn_importar.place(anchor='center', relx=0.1, rely=0.63, width=150, height=30)
 
@@ -47,17 +53,16 @@ class Ventana(tk.Tk):
         btn_exportar.place(anchor='center', relx=0.9, rely=0.63, width=150, height=30)
 
         # --- Tablas ---------------------
-        tabla00 = ttk.Treeview(self)
-
-        tabla00['columns'] = ['IP NAS AP', 'Inicio de Conexión Día', 'Fin de Conexión Día', 'Input Octects', 'Output Octects']
-
-        tabla00.heading('IP NAS AP', text='IP NAS AP')
-        tabla00.heading('Inicio de Conexión Día', text='Inicio de Conexión Día')
-        tabla00.heading('Fin de Conexión Día', text='Fin de Conexión Día')
-        tabla00.heading('Input Octects', text='Input Octects')
-        tabla00.heading('Output Octects', text='Output Octects')
-        
-        tabla00.place(anchor='center', relx= 0.5, rely=0.5)  
+        self.tabla00 = ttk.Treeview(self)
+        self.tabla00.place(anchor='center', relx=0.5, rely=0.5)
+        self.tabla00['columns'] = ('ColumnaAP', 'ColumnaInicio', 'ColumnaFin', 'ColumnaInput', 'ColumnaOutput')
+        self.tabla00.heading('#0', text='#')
+        self.tabla00.heading('ColumnaAP', text='IP NAS AP')
+        self.tabla00.heading('ColumnaInicio', text='Inicio de Conexión Día')
+        self.tabla00.heading('ColumnaFin', text='Fin de Conexión Día')
+        self.tabla00.heading('ColumnaInput', text='Input Octects')
+        self.tabla00.heading('ColumnaOutput', text='Output Octects')
+        self.contador_filas = 0  # Variable de contador de filas
 
         self.mainloop()
 
@@ -77,15 +82,23 @@ class Ventana(tk.Tk):
     def verTabla(self):
         subventana_ver_tabla = SubventanaVerTabla(self, 'Ver Tabla', '¿Qué tabla quiere ver?')
         opcion = subventana_ver_tabla.mostrar()
-        if opcion == 'Rango Abierto':
-            self.actualizarTabla(self.trafico.tabla_abierto)
-        elif opcion == 'Rango Cerrado':
-            self.actualizarTabla(self.trafico.tabla_cerrado)
+        df = self.trafico.actualizarTabla(opcion)  # Obtener el DataFrame df
+        if df is not None:
+            # Configurar las columnas del TreeView
+            columnas = ['IP NAS AP', 'Inicio de Conexión Día', 'Fin de Conexión Día', 'Input Octects', 'Output Octects']
+            self.tabla00['columns'] = columnas
+            for columna in columnas:
+                self.tabla00.heading(columna, text=columna)
 
-    def actualizarTabla(self, datos):
-        self.tabla00.delete(*self.tabla00.get_children())
-        for row in datos:
-            self.tabla00.insert('', 'end', values=row)
+            # Agregar las filas del DataFrame al TreeView
+            self.tabla00.delete(*self.tabla00.get_children())
+            self.contador_filas = 0  # Reiniciar el contador de filas
+            for _, fila in df.iterrows():
+                self.contador_filas += 1
+                values = list(fila.values)  # Obtener los valores de la fila
+                self.tabla00.insert('', tk.END, text=(str(self.contador_filas)), values=values)
+        else:
+            messagebox.showerror('Error', 'No hay datos.')
 
     def exportarXLSX(self):
         subventana_exportar = SubventanaExportar(self, 'Exportar XLSX', '¿Qué rango quiere exportar?')

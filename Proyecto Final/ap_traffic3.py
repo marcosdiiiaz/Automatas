@@ -88,6 +88,8 @@ class Trafico:
             messagebox.showinfo("Información", f"Se encontraron {contador_errores} errores en el archivo CSV.")
 
     def calcularRangoAbierto(self, fecha_inicio, fecha_fin):
+        self.rango_abierto = []
+        datos_seleccionados = []
         for row in self.datos_filtrados:
             inicio_conexion_dia = row[6]
             fin_conexion_dia = row[8]
@@ -97,13 +99,13 @@ class Trafico:
             if self.rango_abierto:
                 try:
                     columnas_seleccionadas = [4, 6, 8, 11, 12]
-                    datos_seleccionados = []
                     datos_seleccionados = [[row[i] for i in columnas_seleccionadas] for row in self.rango_abierto]
                     self.dfa = pd.DataFrame(datos_seleccionados, columns=[self.encabezados[i] for i in columnas_seleccionadas])
                 except Exception as e:
                     messagebox.showerror("Error", str(e))
             else:
                 messagebox.showerror('Error', 'No hay datos.')
+                break
 
             ap_trafico_maximo = None
             trafico_maximo = 0
@@ -121,6 +123,9 @@ class Trafico:
             messagebox.showinfo("Resultado", "No se encontraron datos dentro del rango de fechas proporcionado.")
 
     def calcularRangoCerrado(self, fecha_inicio, fecha_fin):
+        self.rango_cerrado = []
+        datos_seleccionados = []
+        self.dfc = []
         for row in self.datos_filtrados:
             inicio_conexion_dia = row[6]
             fin_conexion_dia = row[8]
@@ -130,9 +135,8 @@ class Trafico:
             if self.rango_cerrado:
                 try:
                     columnas_seleccionadas = [4, 6, 8, 11, 12]
-                    datos_seleccionados = []
                     datos_seleccionados = [[row[i] for i in columnas_seleccionadas] for row in self.rango_cerrado]
-                    self.dfa = pd.DataFrame(datos_seleccionados, columns=[self.encabezados[i] for i in columnas_seleccionadas])
+                    self.dfc = pd.DataFrame(datos_seleccionados, columns=[self.encabezados[i] for i in columnas_seleccionadas])
                 except Exception as e:
                     messagebox.showerror("Error", str(e))
             else:
