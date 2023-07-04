@@ -1,7 +1,6 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, font
-from datetime import datetime
 from ap_traffic import Trafico
+from tkinter import ttk, messagebox, font
 
 # --- Ventanas --------------------
 class Ventana(tk.Tk):
