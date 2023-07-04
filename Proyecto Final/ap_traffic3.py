@@ -106,7 +106,7 @@ class Trafico:
             else:
                 messagebox.showerror('Error', 'No hay datos.')
                 break
-
+        try:
             ap_trafico_maximo = None
             trafico_maximo = 0
             for row in self.rango_abierto:
@@ -116,6 +116,8 @@ class Trafico:
                 if trafico > trafico_maximo:
                     trafico_maximo = trafico
                     ap_trafico_maximo = row[4]
+        except Exception as e:
+            messagebox.showerror('Error', str(e))
 
         if ap_trafico_maximo:
             messagebox.showinfo("Resultado", f"El AP con más tráfico en el rango de fechas proporcionado es: {ap_trafico_maximo}")
@@ -141,7 +143,9 @@ class Trafico:
                     messagebox.showerror("Error", str(e))
             else:
                 messagebox.showerror('Error', 'No hay datos.')
+                break
 
+        try:
             ap_trafico_maximo = None
             trafico_maximo = 0
             for row in self.rango_cerrado:
@@ -151,6 +155,8 @@ class Trafico:
                 if trafico > trafico_maximo:
                     trafico_maximo = trafico
                     ap_trafico_maximo = row[4]
+        except Exception as e:
+            messagebox.showerror('Error', str(e))
 
         if ap_trafico_maximo:
             messagebox.showinfo("Resultado", f"El AP con más tráfico en el rango de fechas proporcionado es: {ap_trafico_maximo}")

@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, font
+from tkinter import ttk, messagebox, font
 from datetime import datetime
 from ap_traffic3 import Trafico
 
