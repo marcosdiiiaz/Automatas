@@ -37,7 +37,7 @@ class Ventana(tk.Tk):
         self.ent_ff.place(anchor='center', relx=0.6, rely=0.37, height=30)
 
         # --- Botones --------------------
-        btn_ayuda = tk.Button(fra_herramientas, text='Ayuda')
+        btn_ayuda = tk.Button(fra_herramientas, text='Ayuda', fg='#dde8ed', bg='#2c2c2c')
         btn_ayuda.place(anchor='center', relx=0.1, rely=0.37, width=150, height=30)
 
         btn_importar = tk.Button(fra_herramientas, text='Importar CSV', command=self.trafico.importarCSV)

@@ -48,8 +48,6 @@ class Trafico:
                     self.encabezados = next(lector_csv)
                     self.datos_csv = list(lector_csv)
                     messagebox.showinfo("Información", "El archivo se ha importado correctamente.")
-            except FileNotFoundError:
-                messagebox.showerror("Error", "Archivo no encontrado.")
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
@@ -75,16 +73,16 @@ class Trafico:
         self.errores = []
         self.datos_filtrados = []
 
-        for row in self.datos_csv:
-            for index in range(len(self.encabezados)):
-                columna = self.encabezados[index]
-                value = row[index]
+        for fila in self.datos_csv:
+            for indice in range(len(self.encabezados)):
+                columna = self.encabezados[indice]
+                valor = fila[indice]
                 formato = self.formatos.get(columna)
-                if not re.match(formato, value):
-                    self.errores.append(row)
+                if not re.match(formato, valor):
+                    self.errores.append(fila)
                     break
             else:
-                self.datos_filtrados.append(row)
+                self.datos_filtrados.append(fila)
         contador_errores = len(self.errores)
         if contador_errores != 0:
             messagebox.showinfo("Información", f"Se encontraron {contador_errores} errores en el archivo CSV.")
@@ -97,18 +95,18 @@ class Trafico:
         trafico_maximo = 0
 
         try:
-            for row in self.datos_filtrados:
-                inicio_conexion_dia = row[6]
-                fin_conexion_dia = row[8]
+            for fila in self.datos_filtrados:
+                inicio_conexion_dia = fila[6]
+                fin_conexion_dia = fila[8]
                 if (fecha_inicio <= inicio_conexion_dia <= fecha_fin) or (fecha_inicio <= fin_conexion_dia <= fecha_fin) or (inicio_conexion_dia < fecha_inicio and fin_conexion_dia > fecha_fin):
-                    self.rango_abierto.append(row)
+                    self.rango_abierto.append(fila)
 
-                input_octets = int(row[11])
-                output_octets = int(row[12])
+                input_octets = int(fila[11])
+                output_octets = int(fila[12])
                 trafico = input_octets + output_octets
                 if trafico > trafico_maximo:
                     trafico_maximo = trafico
-                    ap_trafico_maximo = row[4]
+                    ap_trafico_maximo = fila[4]
         except Exception as e:
             messagebox.showerror('Error', str(e))
             return
@@ -117,9 +115,9 @@ class Trafico:
             messagebox.showerror('Error', 'No hay datos.')
             return
 
-        try:
+        try: # Guarda en DataFrame solo las columnas pedidas de cada fila.
             columnas_seleccionadas = [0, 4, 6, 8, 11, 12]
-            datos_seleccionados = [[row[i] for i in columnas_seleccionadas] for row in self.rango_abierto]
+            datos_seleccionados = [[fila[i] for i in columnas_seleccionadas] for fila in self.rango_abierto]
             self.dfa = pd.DataFrame(datos_seleccionados, columns=[self.encabezados[i] for i in columnas_seleccionadas])
         except Exception as e:
             messagebox.showerror('Error', str(e))
@@ -159,12 +157,12 @@ class Trafico:
             messagebox.showerror('Error', 'No hay datos.')
             return
 
-        try:
+        try: # Guarda en DataFrame solo las columnas pedidas de cada fila.
             columnas_seleccionadas = [0, 4, 6, 8, 11, 12]
             datos_seleccionados = [[row[i] for i in columnas_seleccionadas] for row in self.rango_cerrado]
             self.dfc = pd.DataFrame(datos_seleccionados, columns=[self.encabezados[i] for i in columnas_seleccionadas])
         except Exception as e:
-            messagebox.showerror('Error', str(e))
+            messagebox.showerror('Error', str(e)) 
             return
 
         if self.ap_trafico_maximo:
